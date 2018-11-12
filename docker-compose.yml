@@ -4,8 +4,6 @@ services:
     image: mysql:5.7
     container_name: mysql
     restart: always
-    networks:
-      - myapp
     ports:
       - 3306:3306
     environment:
@@ -19,8 +17,6 @@ services:
     image: redis:alpine
     container_name: redis
     restart: always
-    networks:
-      - myapp
     volumes:
       - ./data/redis:/data
     ports:
@@ -29,8 +25,6 @@ services:
     image: rabbitmq:management-alpine
     container_name: rabbitmq
     restart: always
-    networks:
-      - myapp
     volumes:
       - ./data/rabbitmq:/var/lib/rabbitmq
     ports:
@@ -41,16 +35,10 @@ services:
     container_name: jenkins
     restart: always
     user: root
-    networks:
-      - myapp
     ports:
       - 8080:8080
     volumes:
       - ./data/jenkins_home:/var/jenkins_home
       - /usr/local/bin/docker:/usr/bin/docker
       - /var/run/docker.sock:/var/run/docker.sock
-
-networks:
-  myapp:
-    driver: bridge
     
