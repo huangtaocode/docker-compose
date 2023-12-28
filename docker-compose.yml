@@ -32,6 +32,14 @@ services:
       - ./data/redis:/data
     ports:
       - 6379:6379
+  redis-stack-server:
+    image: redis/redis-stack-server:6.2.6-v9
+    container_name: redis-stack-server
+    restart: always
+    ports:
+      - 6379:6379
+    volumes:
+      - ./redis:/data
   rabbitmq:
     image: rabbitmq:management-alpine
     container_name: rabbitmq
@@ -41,6 +49,26 @@ services:
     ports:
       - 5672:5672
       - 15672:15672
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=root
+    volumes:
+      - ./mongo/data:/data/db
+  doocs:
+    image: node:20-alpine
+    container_name: doocs
+    restart: always
+    tty: true
+    ports:
+      - 9000:9000
+    command: /bin/sh -c "npm i -g @doocs/md-cli && md-cli port=9000"
+  
 
 
     
