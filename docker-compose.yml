@@ -40,15 +40,6 @@ services:
       - 6379:6379
     volumes:
       - ./redis:/data
-  rabbitmq:
-    image: rabbitmq:management-alpine
-    container_name: rabbitmq
-    restart: always
-    volumes:
-      - ./data/rabbitmq:/var/lib/rabbitmq
-    ports:
-      - 5672:5672
-      - 15672:15672
   mongo:
     image: mongo:latest
     container_name: mongo
@@ -68,6 +59,70 @@ services:
     ports:
       - 9000:9000
     command: /bin/sh -c "npm i -g @doocs/md-cli && md-cli port=9000"
+  loki:
+    image: grafana/loki:2.9.4
+    container_name: loki
+    restart: always
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki:/var/tmp
+    command: -config.file=/var/tmp/local-config.yaml
+  promtail:
+    image: grafana/promtail:2.9.4
+    container_name: promtail
+    restart: always
+    volumes:
+      - /Users/tao.huang/log:/var/log
+      - ./promtail:/var/tmp
+    command: -config.file=/var/tmp/config.yml
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: always
+    ports:
+      - "3001:3000"
+  rmqnamesrv:
+    image: apache/rocketmq:5.3.0
+    container_name: rmqnamesrv
+    restart: always
+    ports:
+      - "9876:9876"
+    command: sh mqnamesrv
+  rmqbroker:
+    image: apache/rocketmq:5.3.0
+    container_name: rmqbroker
+    restart: always
+    ports:
+      - "10909:10909"
+      - "10911:10911"
+      - "10912:10912"
+    environment:
+      - NAMESRV_ADDR=rmqnamesrv:9876
+    depends_on:
+      - rmqnamesrv
+    command: sh mqbroker
+  rmqproxy:
+    image: apache/rocketmq:5.3.0
+    container_name: rmqproxy
+    restart: always
+    ports:
+      - "10915:8080"
+      - "10916:8081"
+    environment:
+      - NAMESRV_ADDR=rmqnamesrv:9876
+    depends_on:
+      - rmqbroker
+      - rmqnamesrv
+    command: sh mqproxy
+  rmqdashboard:
+    image: apacherocketmq/rocketmq-dashboard:latest
+    container_name: rmqdashboard
+    restart: always
+    ports:
+      - "10920:8080"
+    environment:
+      - "JAVA_OPTS=-Drocketmq.namesrv.addr=rmqnamesrv:9876"
   
 
 
